@@ -37,7 +37,7 @@ class UserService {
       const newUser = await Models.user.create(userData);
 
       Logger.info('User created successfully');
-      return newUser;
+      return { data: { userId: newUser.userId }, Message: 'User created successfully' };
     } catch (error) {
       Logger.error('UserService: Error creating user', error);
       throw Response.createError(Message.tryAgain, error);

@@ -2,7 +2,12 @@ module.exports = (queryInterface, DataTypes) => {
   const User = queryInterface.define(
     'user',
     {
-      username: {
+      userId: {
+        type: DataTypes.INTEGER,
+        primaryKey: true, // Set fileId as the primary key
+        autoIncrement: true, // Assuming fileId is an auto-incrementing integer
+      },
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,

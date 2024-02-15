@@ -5,25 +5,25 @@ const { UserService } = require('../services');
 // Controller function for user signup
 // eslint-disable-next-line consistent-return
 exports.signUp = async (req, res, next) => {
-  const { username, email, password } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     // Check if user already exists
     const isPresent = await UserService.checkUserByEmail(email);
-    if (!isPresent) {
+    if (isPresent) {
       throw Response.createError(Message.USER_ALREADY_EXISTS);
     }
 
     const params = {
-      username,
+      name,
       email,
       password: await bcrypt.hash(password, 10),
     };
     // Create new user
-    await UserService.createUser(params);
+    const userSrv = await UserService.createUser(params);
 
     // Return success response
-    Response.success(res, null, 'User created successfully');
+    Response.success(res, userSrv);
   } catch (err) {
     next(err);
   }
@@ -48,11 +48,11 @@ exports.signIn = async (req, res, next) => {
     }
 
     // Create JWT token
-    const payload = { userId: user.id };
+    const payload = { userId: user.userId };
 
     const token = JwtToken.createToken(payload);
 
-    Response.success(res, { token, message: 'Login Successful' });
+    Response.success(res, { data: { token }, message: 'Login Successful' });
   } catch (err) {
     next(err);
   }

@@ -28,11 +28,12 @@ function customErrorHandler(err, req, res, next) {
       },
     );
   }
-  if (err.code) {
+
+  if (err.statusCode) {
     return Response.fail(
       res,
       err.message,
-      err.code,
+      err.statusCode,
       err,
     );
   }

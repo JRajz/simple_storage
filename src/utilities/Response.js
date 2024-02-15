@@ -2,16 +2,11 @@ const { StatusCodes } = require('http-status-codes');
 
 class Response {
   // Method for sending successful responses
-  static success(res, data = null, statusCode = StatusCodes.OK) {
-    // Clone the data object to prevent modifying the original one
-    const responseData = data ? { ...data } : {};
-    // Remove the 'message' property from the cloned data object
-    delete responseData.message;
-
+  static success(res, { data, message }, statusCode = StatusCodes.OK) {
     // Construct the response object
     const responseObj = {
-      message: data ? data.message : null, // Set the message from data, if provided
-      data: responseData, // Set the data object without the 'message' property
+      message: message ?? null, // Set the message from data, if provided
+      data: data ?? null, // Set the data if provided
       statusCode,
       success: true,
     };
@@ -48,7 +43,7 @@ class Response {
 
     error.message = type.message;
     // Set the error code from the provided type or default to 500
-    error.code = type.code || StatusCodes.INTERNAL_SERVER_ERROR;
+    error.statusCode = type.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
     // Set the error name from the provided type or default to 'Error'
     error.name = type.name || 'Error';
     return error;

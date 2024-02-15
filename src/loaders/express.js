@@ -37,7 +37,7 @@ exports.loadModules = ({ app }) => {
   // Catch 404 and forward to error handler
   app.use((req, res, next) => {
     const error = new Error(`Route ${req.url} Not Found`);
-    error.code = StatusCodes.NOT_FOUND;
+    error.statusCode = StatusCodes.NOT_FOUND;
     next(error);
   });
 
