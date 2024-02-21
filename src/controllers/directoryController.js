@@ -9,7 +9,33 @@ class DirectoryController {
 
       const srvRes = await DirectoryService.create(params);
 
-      Response.success(res, srvRes, 'Directories created successfully');
+      Response.success(res, srvRes, 'Directory created successfully');
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async update(req, res, next) {
+    try {
+      const params = { ...req.body, ...req.params };
+      params.creatorId = req.user.userId;
+
+      const srvRes = await DirectoryService.update(params);
+
+      Response.success(res, srvRes, 'Directory updated');
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async delete(req, res, next) {
+    try {
+      const params = { ...req.params };
+      params.creatorId = req.user.userId;
+
+      const srvRes = await DirectoryService.delete(params);
+
+      Response.success(res, srvRes, 'Directory deleted');
     } catch (err) {
       next(err);
     }

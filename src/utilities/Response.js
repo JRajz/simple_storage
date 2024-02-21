@@ -63,7 +63,11 @@ class Response {
    * @param {Object} type - Error type object.
    * @returns {Error} - Custom Error object.
    */
-  static createError(type) {
+  static createError(type, error = null) {
+    if (error && error.statusCode) {
+      return error;
+    }
+
     // Create a new Error object with the specified message
     const newError = new Error(type.message);
 

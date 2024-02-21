@@ -6,4 +6,8 @@ router.get('/', DirectoryController.getAll);
 
 router.post('/', directoryValidator.create, DirectoryController.create);
 
+router.put('/:directoryId', directoryValidator.update, DirectoryController.update);
+
+router.delete('/:directoryId', directoryValidator.delete, DirectoryController.delete);
+
 module.exports = router;

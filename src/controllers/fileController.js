@@ -53,7 +53,7 @@ class FileController {
         throw Response.createError(Message.INVALID_FILE);
       }
 
-      await DirectoryService.check({ directoryId, creatorId: req.user.userId });
+      await DirectoryService.checkDirectoryExistence({ directoryId, creatorId: req.user.userId });
       const fileRes = await FileController._uploadFile(file, req.user.userId, directoryId);
 
       Response.success(res, fileRes, Message.FILE_UPLOADED);
