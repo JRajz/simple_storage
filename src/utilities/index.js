@@ -5,4 +5,6 @@ module.exports = {
   Logger: require('./Logger'),
   Response: require('./Response'),
   Message: require('./Message'),
+  Validate: require('./Validate'),
+  fileHashGenerator: require('./fileHashGenerator'),
 };

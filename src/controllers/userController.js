@@ -14,16 +14,14 @@ exports.signUp = async (req, res, next) => {
       throw Response.createError(Message.USER_ALREADY_EXISTS);
     }
 
-    const params = {
-      name,
-      email,
-      password: await bcrypt.hash(password, 10),
-    };
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Create new user
-    const userSrv = await UserService.createUser(params);
+    const userRes = await UserService.createUser({ name, email, password: hashedPassword });
 
     // Return success response
-    Response.success(res, userSrv);
+    Response.success(res, userRes, Message.USER_CREATED_SUCCESSFULLY);
   } catch (err) {
     next(err);
   }
@@ -52,7 +50,7 @@ exports.signIn = async (req, res, next) => {
 
     const token = JwtToken.createToken(payload);
 
-    Response.success(res, { data: { token }, message: 'Login Successful' });
+    Response.success(res, { token }, 'Login Successful');
   } catch (err) {
     next(err);
   }

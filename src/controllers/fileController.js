@@ -1,53 +1,66 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
-const crypto = require('crypto');
-const { StatusCodes } = require('http-status-codes');
-const { FileService } = require('../services');
-const { Response, Message, Logger } = require('../utilities');
+const { FileService, DirectoryService, FileMapService } = require('../services');
+const { Response, Message, fileHashGenerator } = require('../utilities');
 
-// generate the file hash key
-async function generateHashKey(filePath) {
-  return new Promise((resolve, reject) => {
-    const hash = crypto.createHash('md5');
-    const stream = fs.createReadStream(filePath);
-
-    stream.on('data', (data) => hash.update(data));
-    stream.on('end', () => resolve(hash.digest('hex')));
-    stream.on('error', (error) => reject(error));
-  });
-}
-// eslint-disable-next-line consistent-return
-async function upload(req, res, next) {
-  try {
-    const { file } = req;
+class FileController {
+  static async _uploadFile(file, creatorId, directoryId = null) {
+    const checkParams = { directoryId, creatorId };
 
     // Generate a hash key from the file stream
-    const hashKey = await generateHashKey(file.path); // Implement your logic here
+    const fileHash = await fileHashGenerator.generateHashKey(file.path);
 
     // Check if the hash key already exists in the database
-    const existingFile = await FileService.getByHashKey({ hashKey });
+    const existingFile = await FileService.getByHashKey({ fileHash });
     if (existingFile) {
-      fs.unlinkSync(file.path);
-      throw Response.createError(Message.FILE_EXISTS);
+      await fs.unlink(file.path); // Asynchronously remove the temporary file
+      checkParams.fileId = existingFile.fileId;
+      await FileMapService.isUnique(checkParams);
     }
 
     const fileParams = {
-      fileName: req.file.filename,
-      filePath: req.file.path,
-      hashKey,
-      size: req.file.size,
-      mimeType: req.file.mimetype,
-      fileType: path.extname(req.file.originalname).substr(1),
-      creatorId: req.user.userId,
+      fileName: file.filename,
+      filePath: file.path,
+      fileHash,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+      fileType: path.extname(file.originalname).substr(1),
+      ...checkParams,
     };
 
     const fileRes = await FileService.insert(fileParams);
+    return fileRes;
+  }
 
-    return Response.success(res, fileRes, StatusCodes.CREATED);
-  } catch (error) {
-    Logger.error('Failed to upload file: ', error);
-    next(error);
+  static async uploadToRoot(req, res, next) {
+    try {
+      const { file } = req;
+      if (!file) {
+        throw Response.createError(Message.INVALID_FILE);
+      }
+
+      const fileRes = await FileController._uploadFile(file, req.user.userId, null);
+      Response.success(res, fileRes, Message.FILE_UPLOADED);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async uploadToDirectory(req, res, next) {
+    try {
+      const { file, params: { directoryId } } = req;
+      if (!file) {
+        throw Response.createError(Message.INVALID_FILE);
+      }
+
+      await DirectoryService.check({ directoryId, creatorId: req.user.userId });
+      const fileRes = await FileController._uploadFile(file, req.user.userId, directoryId);
+
+      Response.success(res, fileRes, Message.FILE_UPLOADED);
+    } catch (err) {
+      next(err);
+    }
   }
 }
 
-module.exports = { upload };
+module.exports = FileController;

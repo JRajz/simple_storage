@@ -9,8 +9,7 @@ const authenticateToken = (req, res, next) => {
       throw Response.createError(Message.INVALID_AUTHORIZATION_HEADER);
     }
 
-    const token = authHeader.split(' ')[1]; // Extract token
-
+    const token = authHeader.substring(7); // Extract token
     // Validate token presence
     if (!token) {
       throw Response.createError(Message.MISSING_TOKEN_IN_AUTHORIZATION_HEADER);

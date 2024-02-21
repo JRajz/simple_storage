@@ -1,4 +1,4 @@
-const { Models } = require('../loaders/sequelize');
+const { models } = require('../loaders/sequelize');
 const { Logger, Response, Message } = require('../utilities');
 
 class UserService {
@@ -6,7 +6,7 @@ class UserService {
     try {
       Logger.info('UserService: Getting user by ID', { userId });
 
-      const user = await Models.User.findByPk(userId);
+      const user = await models.User.findByPk(userId);
 
       if (user) {
         return user;
@@ -34,10 +34,11 @@ class UserService {
     try {
       Logger.info('UserService: Creating user');
 
-      const newUser = await Models.user.create(userData);
+      const newUser = await models.user.create(userData);
 
       Logger.info('User created successfully');
-      return { data: { userId: newUser.userId }, Message: 'User created successfully' };
+
+      return { userId: newUser.userId };
     } catch (error) {
       Logger.error('UserService: Error creating user', error);
       throw Response.createError(Message.tryAgain, error);
@@ -48,7 +49,7 @@ class UserService {
     try {
       Logger.info('UserService: Checking uniqueness of email');
 
-      const user = await Models.user.findOne({ where: { email } });
+      const user = await models.user.findOne({ where: { email } });
 
       return user;
     } catch (error) {

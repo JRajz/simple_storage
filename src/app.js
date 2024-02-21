@@ -1,7 +1,7 @@
 const express = require('express');
 
 const { Logger } = require('./utilities');
-const Config = require('./config');
+const { PORT } = require('./config');
 const initLoader = require('./loaders');
 const { sequelize } = require('./loaders/sequelize');
 
@@ -17,7 +17,7 @@ Logger.initLogger();
     await initLoader({ expressApp: app });
 
     // Start the server
-    app.listen(Config.Port, (err) => {
+    app.listen(PORT, (err) => {
       if (err) {
         Logger.error('Unable to start server', err);
         process.exit(1);
@@ -25,7 +25,7 @@ Logger.initLogger();
 
       Logger.info(`\n
       ################################################
-      🛡️  Server listening on port: ${Config.Port} 🛡️
+      🛡️  Server listening on port: ${PORT} 🛡️
       ################################################\n\n`);
     });
   } catch (e) {

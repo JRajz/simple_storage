@@ -12,4 +12,4 @@
 .env
 !.env.sample
 
-/upload/*
+/uploads/

@@ -7,6 +7,11 @@ module.exports = (queryInterface, DataTypes) => {
         primaryKey: true, // Set fileId as the primary key
         autoIncrement: true, // Assuming fileId is an auto-incrementing integer
       },
+      fileHash: {
+        type: DataTypes.STRING, // Can be replaced with a unique identifier
+        allowNull: false,
+        unique: true,
+      },
       fileName: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -16,12 +21,7 @@ module.exports = (queryInterface, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      hashKey: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      size: {
+      fileSize: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -39,8 +39,18 @@ module.exports = (queryInterface, DataTypes) => {
       },
     },
     {
-      // Enable soft deletion
-      paranoid: true,
+      timestamps: true,
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+      paranoid: true, // Enable soft deletion
+      hooks: {
+        // eslint-disable-next-line no-unused-vars
+        beforeUpdate: (instance, options) => {
+          // Update only updatedAt, leaving createdAt untouched
+          // eslint-disable-next-line no-param-reassign
+          instance.updatedAt = new Date();
+        },
+      },
     },
   );
 

@@ -6,6 +6,10 @@ const Messages = {
     statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
     message: 'An error occurred. Please try again later.',
   },
+  TRY_AGAIN: {
+    code: StatusCodes.INTERNAL_SERVER_ERROR,
+    message: 'Please try again',
+  },
   INVALID_REQUEST: {
     statusCode: StatusCodes.BAD_REQUEST,
     message: 'Invalid request. Please check your input.',
@@ -57,6 +61,22 @@ const Messages = {
   FILE_EXISTS: {
     statusCode: StatusCodes.BAD_REQUEST,
     message: 'File already exists!',
+  },
+  FILE_UPLOADED: {
+    statusCode: StatusCodes.CREATED,
+    message: 'File uploaded succesfully',
+  },
+  INVALID_DIRECTORY: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'Directory not found.',
+  },
+  INVALID_FILE: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'Invalid file',
+  },
+  DUPLICATE_FILE: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'Duplicate file',
   },
   // You can add more messages as needed
 };

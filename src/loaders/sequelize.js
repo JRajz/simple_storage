@@ -1,45 +1,46 @@
+/* eslint-disable import/no-dynamic-require */
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
-const Config = require('../config');
+const { DATABASE } = require('../config');
 
-const basename = path.basename(__filename);
-const Models = {};
+const models = {};
+
 const modelsPath = path.join(__dirname, '../models');
 
 // Initialize Sequelize instance
 const sequelize = new Sequelize(
-  Config.Database.Name,
-  Config.Database.User,
-  Config.Database.Password,
+  DATABASE.NAME,
+  DATABASE.USER,
+  DATABASE.PASSWORD,
   {
-    host: Config.Database.Host,
-    dialect: Config.Database.Dialect,
-    charset: Config.Database.Charset,
-    collate: Config.Database.Collate,
+    host: DATABASE.HOST,
+    dialect: DATABASE.DIALECT,
+    charset: DATABASE.CHARSET,
+    collate: DATABASE.COLLATE,
     benchmark: true, // log query time
     // eslint-disable-next-line no-console
-    logging: Config.Database.LogQuery ? console.log : false,
+    logging: DATABASE.LOG_QUERY ? console.log : false, // Enable logging if configured
   },
 );
 
 // Load models dynamically
 fs.readdirSync(modelsPath)
-  .filter((file) => file.endsWith('.js') && file !== basename)
+  .filter((file) => file.endsWith('.js') && file !== 'index.js')
   .forEach((file) => {
     // eslint-disable-next-line import/no-dynamic-require, global-require
     const model = require(`${modelsPath}/${file}`)(sequelize, Sequelize.DataTypes);
-    Models[model.name] = model;
+    models[model.name] = model;
   });
 
 // Associate models if associations are defined
-Object.values(Models).forEach((model) => {
+Object.values(models).forEach((model) => {
   if (model.associate) {
-    model.associate(Models);
+    model.associate(models);
   }
 });
 
 module.exports = {
-  Models,
+  models,
   sequelize,
 };
