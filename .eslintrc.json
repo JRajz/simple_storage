@@ -1,17 +1,38 @@
 {
+  "extends": ["airbnb", "prettier"],
+  "plugins": ["prettier"],
   "env": {
-    "commonjs": true,
-    "es2021": true,
+    "es6": true,
     "node": true
   },
-  "extends": "airbnb-base",
   "parserOptions": {
     "ecmaFeatures": {},
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
   "rules": {
-    "semi": ["error", "always"],
-    "no-underscore-dangle": 0
+    // Prettier formatting
+    "prettier/prettier": ["error"],
+
+    // Error prevention and code style
+    "no-restricted-syntax": [2, "WithStatement", "DoWhileStatement"], // Disallow specific syntax for clarity
+    "no-console": ["error", { "allow": ["warn", "error", "log"] }], // Allow specific console methods for error handling and logging
+    "no-undef": ["error"], // Disallow undefined variables
+    "no-unused-vars": ["warn"], // Warn about unused variables
+    "no-shadow": ["warn"], // Warn about variable shadowing
+    "semi": ["error", "always"], // Enforce semicolons
+
+    // Maintainability
+    "object-shorthand": ["error", "always", { "avoidQuotes": true }], // Enforce object property shorthand
+    "max-len": ["warn", 120], // Warn about excessively long lines
+    "no-multiple-empty-lines": ["warn", { "max": 2 }], // Warn about excessive blank lines
+
+    // Flexibility
+    "class-methods-use-this": 0, // Allow class methods without using `this` (consider enabling if needed)
+    "no-param-reassign": 0, // Allow parameter reassignment (consider enabling if needed)
+    "no-underscore-dangle": 0, // Allow underscores for private/internal members (consider enabling if needed)
+    "radix": 0, // Allow using `parseInt` without the radix parameter (consider enabling if needed)
+    "func-names": 0, // Allow unnamed functions (consider enabling if needed)
+    "prefer-destructuring": ["error", { "array": false, "object": false }] // Allow object and array destructuring (consider enabling if needed)
   }
 }

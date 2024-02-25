@@ -39,9 +39,7 @@ class FileService {
       Logger.info('FileService: Inserting file', fileData);
 
       // Destructure fileData to get relevant information
-      const {
-        directoryId, fileId, fileName, ...fileParams
-      } = fileData;
+      const { directoryId, fileId, fileName, ...fileParams } = fileData;
 
       // Construct the permanent upload file path
       const uploadFilePath = path.resolve(__dirname, '../../uploads', fileName);

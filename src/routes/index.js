@@ -1,5 +1,5 @@
 const { Logger, Response } = require('../utilities');
-const authenticateToken = require('../middlewares/authMiddleware');
+const { authMiddleware } = require('../middlewares');
 
 /* eslint-disable global-require */
 exports.loadRoutes = (app) => {
@@ -12,6 +12,6 @@ exports.loadRoutes = (app) => {
   // Mount routes
   app.use('/users', require('./userRoutes'));
 
-  app.use('/files', authenticateToken, require('./fileRoutes'));
-  app.use('/directories', authenticateToken, require('./directoryRoutes'));
+  app.use('/files', authMiddleware, require('./fileRoutes'));
+  app.use('/directories', authMiddleware, require('./directoryRoutes'));
 };

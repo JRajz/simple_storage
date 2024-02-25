@@ -2,7 +2,7 @@ module.exports = (queryInterface, DataTypes) => {
   const FileMap = queryInterface.define(
     'filemap',
     {
-      fileMapId: {
+      id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
@@ -22,6 +22,14 @@ module.exports = (queryInterface, DataTypes) => {
           model: 'directories', // This references the same table
           key: 'directoryId', // The column in the referenced table
         },
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING,
+        allowNull: false,
       },
       accessType: {
         type: DataTypes.ENUM('Public', 'Private', 'Partial'),

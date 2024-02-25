@@ -4,7 +4,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const { StatusCodes } = require('http-status-codes');
 const { errors } = require('celebrate');
-const customErrorHandler = require('../middlewares/errorHandler');
+const { customErrorHandler } = require('../middlewares');
 const { Logger } = require('../utilities');
 const router = require('../routes');
 

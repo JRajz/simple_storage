@@ -4,12 +4,12 @@ const { Validate } = require('../utilities');
 module.exports = {
   upload: celebrate({
     body: Joi.object().keys({
-      file: Validate.file,
+      file: Validate.fileReq,
     }),
   }),
   directoryUpload: celebrate({
     body: Joi.object().keys({
-      file: Validate.file,
+      file: Validate.fileReq,
     }),
     query: Joi.object().keys({}),
     params: Joi.object().keys({

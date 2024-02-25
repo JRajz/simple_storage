@@ -3,9 +3,7 @@ require('winston-daily-rotate-file');
 const PrettyError = require('pretty-error');
 
 const { format, createLogger, transports } = winston;
-const {
-  combine, timestamp, printf, colorize, simple,
-} = format;
+const { combine, timestamp, printf, colorize, simple } = format;
 
 let LoggerInstance = null;
 
@@ -15,10 +13,7 @@ const initLogger = (level = 'info') => {
   PEInstance.skipNodeFiles(); // Skip node internal files
   PEInstance.skipPackage('winston', 'colors'); // Skip certain packages from stack trace
 
-  const customFormat = printf(({
-    // eslint-disable-next-line no-shadow
-    timestamp, level, message, ...rest
-  }) => {
+  const customFormat = printf(({ timestamp, level, message, ...rest }) => {
     const metaString = Object.keys(rest)
       .map((key) => ` [${key}=${rest[key]}]`)
       .join('');

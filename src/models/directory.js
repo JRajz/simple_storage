@@ -34,7 +34,6 @@ module.exports = (queryInterface, DataTypes) => {
       updatedAt: 'updatedAt',
       paranoid: true, // Enable soft deletion
       hooks: {
-        // eslint-disable-next-line no-unused-vars
         beforeUpdate: (instance, options) => {
           // Update only updatedAt, leaving createdAt untouched
           // eslint-disable-next-line no-param-reassign
@@ -46,7 +45,7 @@ module.exports = (queryInterface, DataTypes) => {
 
   // Define associations
   Directory.associate = (models) => {
-  // One-to-one relationship between a directory and its creator user
+    // One-to-one relationship between a directory and its creator user
     Directory.belongsTo(models.user, { foreignKey: 'creatorId', as: 'Creator' });
 
     // One-to-one relationship between a directory and its parent directory

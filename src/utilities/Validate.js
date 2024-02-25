@@ -1,12 +1,8 @@
 const { Joi } = require('celebrate');
 
-const string = Joi.string()
-  .trim()
-  .max(255);
+const string = Joi.string().trim().max(255);
 const stringReq = string.required();
-const text = Joi.string()
-  .trim()
-  .max(65535);
+const text = Joi.string().trim().max(65535);
 const textReq = text.required();
 const number = Joi.number();
 const numberReq = number.required();
@@ -16,28 +12,13 @@ const integer = number.integer();
 const intReq = integer.required();
 const posInt = posNum.integer();
 const posIntReq = posInt.required();
-const posIntegers = Joi.array()
-  .items(posInt)
-  .unique();
-const posIntsReq = Joi.array()
-  .items(posIntReq)
-  .unique()
-  .required();
-const email = string
-  .email()
-  .lowercase()
-  .label('Email');
+const posIntegers = Joi.array().items(posInt).unique();
+const posIntsReq = Joi.array().items(posIntReq).unique().required();
+const email = string.email().lowercase().label('Email');
 const emailReq = email.required();
-const password = string
-  .alphanum()
-  .min(8)
-  .max(20)
-  .label('Password');
+const password = string.alphanum().min(8).max(20).label('Password');
 const passReq = password.required();
-const search = Joi.string()
-  .trim()
-  .min(3)
-  .allow('');
+const search = Joi.string().trim().min(3).allow('');
 
 const file = Joi.object().keys({
   fieldname: stringReq,

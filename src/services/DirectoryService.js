@@ -129,7 +129,7 @@ class DirectoryService {
         Logger.info('DirectoryService: Deleted files', { deletedFilesCount });
       });
 
-      return { };
+      return {};
     } catch (error) {
       Logger.error('DirectoryService: Failed to delete directory', error);
       throw Response.createError(Message.tryAgain, error);
