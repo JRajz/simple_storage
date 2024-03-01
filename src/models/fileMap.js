@@ -1,6 +1,6 @@
 module.exports = (queryInterface, DataTypes) => {
   const FileMap = queryInterface.define(
-    'filemap',
+    'fileMap',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -57,6 +57,17 @@ module.exports = (queryInterface, DataTypes) => {
           instance.updatedAt = new Date();
         },
       },
+      // indexes: [
+      //   {
+      //     fields: ['creatorId'],
+      //     name: 'idx_creator',
+      //   },
+      //   {
+      //     unique: true,
+      //     fields: ['fileId', 'directoryId'],
+      //     name: 'idx_unique',
+      //   },
+      // ],
     },
   );
 

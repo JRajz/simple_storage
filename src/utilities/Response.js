@@ -10,7 +10,7 @@ class Response {
    * Can be a string or an object containing `message` and `statusCode` properties.
    * @returns {Object} - Express response object.
    */
-  static success(res, data, message = null) {
+  static success(res, data, message = null, extra = {}) {
     let statusCode = StatusCodes.OK;
     let responseMessage = null;
 
@@ -28,6 +28,7 @@ class Response {
       data: data || null,
       statusCode,
       success: true,
+      ...extra,
     };
 
     return res.status(statusCode).json(responseObject);

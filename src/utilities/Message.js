@@ -18,6 +18,10 @@ const Messages = {
     statusCode: StatusCodes.UNAUTHORIZED,
     message: 'Unauthorized access. Please log in.',
   },
+  ACCESS_DENIED: {
+    statusCode: StatusCodes.FORBIDDEN,
+    message: 'You do not have the necessary permissions to perform this action.',
+  },
   NOT_FOUND: {
     statusCode: StatusCodes.NOT_FOUND,
     message: 'Resource not found.',
@@ -58,6 +62,10 @@ const Messages = {
     statusCode: StatusCodes.BAD_REQUEST,
     message: 'Incorrect password.',
   },
+  FILE_NOT_FOUND: {
+    statusCode: StatusCodes.NOT_FOUND,
+    message: 'File not found.',
+  },
   FILE_EXISTS: {
     statusCode: StatusCodes.BAD_REQUEST,
     message: 'File already exists!',
@@ -77,6 +85,10 @@ const Messages = {
   DUPLICATE_FILE: {
     statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
     message: 'Duplicate file',
+  },
+  DUPLICATE_VERSION_FILE: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'File already exists in versions',
   },
   // You can add more messages as needed
 };

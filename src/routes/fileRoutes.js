@@ -14,14 +14,25 @@ router.post(
   FileController.uploadToDirectory,
 );
 
+// Update file meta data
+router.put('/:fileId', FileValidator.updateMetaData, FileController.updateMetaData);
+
+// Delete file
+router.delete('/:fileId', FileValidator.delete, FileController.delete);
+
 // Download routes
-router.get('/:fileId/download', FileController.downloadFile);
+router.get('/:fileId/download', FileValidator.paramsFileId, FileController.downloadFile);
 
 // File Versioning
-router.get('/:fileId/versions', FileController.downloadFile);
+router.get('/:fileId/versions', FileValidator.paramsFileId, FileController.getFileVersions);
 
-router.post('/:fileId/versions', FileController.downloadFile);
+router.post(
+  '/upload/versions/:fileId',
+  Multer.single('file'),
+  FileValidator.uploadVersion,
+  FileController.uploadVersion,
+);
 
-router.post('/:fileId/versions/revert/:id', FileController.downloadFile);
+// router.post('/:fileId/versions/revert/:id', FileValidator.versionRestore, FileController.getFileVersions);
 
 module.exports = router;

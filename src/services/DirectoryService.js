@@ -122,7 +122,7 @@ class DirectoryService {
         await existingDirectory.destroy({ transaction });
 
         // Delete associated files (consider checking deleted rows here)
-        const deletedFilesCount = await models.filemap.destroy({
+        const deletedFilesCount = await models.fileMap.destroy({
           where: { directoryId },
           transaction,
         });

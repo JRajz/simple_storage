@@ -22,7 +22,7 @@ module.exports = (queryInterface, DataTypes) => {
         allowNull: false,
       },
       fileSize: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT.UNSIGNED,
         allowNull: false,
       },
       fileType: {
@@ -57,6 +57,10 @@ module.exports = (queryInterface, DataTypes) => {
   // Define associations
   File.associate = (models) => {
     File.belongsTo(models.user, { foreignKey: 'creatorId' });
+
+    File.hasMany(models.fileMap, { foreignKey: 'fileId' });
+
+    File.hasMany(models.fileVersion, { foreignKey: 'fileId' });
   };
 
   return File;

@@ -14,18 +14,10 @@ module.exports = (queryInterface, DataTypes) => {
       parentDirectoryId: {
         type: DataTypes.INTEGER,
         allowNull: true, // Allow null for root directory
-        references: {
-          model: 'directories', // This references the same table
-          key: 'directoryId', // The column in the referenced table
-        },
       },
       creatorId: {
         type: DataTypes.INTEGER, // Assuming creatorId is an integer
         allowNull: false,
-        references: {
-          model: 'users', // References the users table
-          key: 'userId', // The column in the referenced table
-        },
       },
     },
     {

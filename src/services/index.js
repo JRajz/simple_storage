@@ -4,4 +4,5 @@ module.exports = {
   UserService: require('./UserService'),
   FileService: require('./FileService'),
   FileMapService: require('./FileMapService'),
+  FileVersionService: require('./FileVersionService'),
 };
