@@ -3,7 +3,12 @@ const { models } = require('../loaders/sequelize');
 const { Logger, Response, Message } = require('../utilities');
 
 class FileService {
-  // Get a file record by its hash key
+  /**
+   * Retrieves a file record by its hash key.
+   * @param {Object} options - An object containing the following property:
+   *   - fileHash: The hash key of the file.
+   * @returns {Promise<Object>} - Resolves with the file record if found, null otherwise.
+   */
   static async getByHashKey({ fileHash }) {
     try {
       Logger.info('FileService: Checking file hash', { fileHash });
@@ -23,10 +28,15 @@ class FileService {
     } catch (error) {
       // Handle errors and throw a formatted response
       Logger.error('FileService: Error Checking file hash', { fileHash });
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
+  /**
+   * Inserts a new file record into the database.
+   * @param {Object} options - An object containing the file parameters.
+   * @returns {Promise<Object>} - Resolves with the inserted file record.
+   */
   static async insert({ transaction, ...fileParams }) {
     try {
       Logger.info('FileService: Inserting file', fileParams);
@@ -40,7 +50,7 @@ class FileService {
       return file;
     } catch (err) {
       Logger.error('FileService: File insertion failed', err);
-      throw Response.createError(Message.tryAgain, err);
+      throw Response.createError(Message.TRY_AGAIN, err);
     }
   }
 }

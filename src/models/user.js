@@ -39,6 +39,8 @@ module.exports = (queryInterface, DataTypes) => {
 
   User.associate = (models) => {
     User.hasMany(models.directory, { foreignKey: 'creatorId' });
+    User.hasMany(models.fileMap, { foreignKey: 'creatorId' });
+    User.hasMany(models.fileAccess, { foreignKey: 'userId' });
   };
 
   return User;

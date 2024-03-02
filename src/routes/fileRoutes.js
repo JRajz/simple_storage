@@ -15,24 +15,28 @@ router.post(
 );
 
 // Update file meta data
-router.put('/:fileId', FileValidator.updateMetaData, FileController.updateMetaData);
+router.put('/:id', FileValidator.updateMetaData, FileController.updateMetaData);
 
 // Delete file
-router.delete('/:fileId', FileValidator.delete, FileController.delete);
+router.delete('/:id', FileValidator.delete, FileController.delete);
 
-// Download routes
-router.get('/:fileId/download', FileValidator.paramsFileId, FileController.downloadFile);
+// Download file
+router.get('/:id/download', FileValidator.paramsFileId, FileController.downloadFile);
 
 // File Versioning
-router.get('/:fileId/versions', FileValidator.paramsFileId, FileController.getFileVersions);
 
-router.post(
-  '/upload/versions/:fileId',
-  Multer.single('file'),
-  FileValidator.uploadVersion,
-  FileController.uploadVersion,
-);
+// Route to get all versions of a file
+router.get('/:id/versions', FileValidator.paramsFileId, FileController.getFileVersions);
 
-// router.post('/:fileId/versions/revert/:id', FileValidator.versionRestore, FileController.getFileVersions);
+// Route to upload a new version of a file
+router.post('/upload/versions/:id', Multer.single('file'), FileValidator.uploadVersion, FileController.uploadVersion);
+
+// Route to revert to a specific version of a file
+router.post('/:id/revert/:versionId', FileValidator.versionRestore, FileController.restoreVersion);
+
+// Route to set file access
+router.post('/:id/access', FileValidator.setAccess, FileController.setAccess);
+
+router.delete('/:id/access/:userId', FileValidator.removeUserAccess, FileController.removeUserAccess);
 
 module.exports = router;

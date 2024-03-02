@@ -29,13 +29,19 @@ module.exports = (queryInterface, DataTypes) => {
       createdAt: 'createdAt',
       updatedAt: 'updatedAt',
       paranoid: false,
+      indexes: [
+        {
+          unique: true,
+          fields: ['fileMapId', 'fileId'],
+          name: 'idx_unique',
+        },
+      ],
     },
   );
 
   // Define associations
   FileVersion.associate = (models) => {
     FileVersion.belongsTo(models.fileMap, { foreignKey: 'fileMapId' });
-
     FileVersion.belongsTo(models.file, { foreignKey: 'fileId' });
   };
 

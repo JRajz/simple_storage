@@ -27,6 +27,7 @@ const sequelize = new Sequelize(DATABASE.NAME, DATABASE.USER, DATABASE.PASSWORD,
 fs.readdirSync(modelsPath)
   .filter((file) => file.endsWith('.js') && file !== 'index.js')
   .forEach((file) => {
+    // eslint-disable-next-line import/no-dynamic-require, global-require
     const model = require(`${modelsPath}/${file}`)(sequelize, Sequelize.DataTypes);
     models[model.name] = model;
   });

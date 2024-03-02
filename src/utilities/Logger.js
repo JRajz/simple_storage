@@ -13,6 +13,7 @@ const initLogger = (level = 'info') => {
   PEInstance.skipNodeFiles(); // Skip node internal files
   PEInstance.skipPackage('winston', 'colors'); // Skip certain packages from stack trace
 
+  // eslint-disable-next-line no-shadow
   const customFormat = printf(({ timestamp, level, message, ...rest }) => {
     const metaString = Object.keys(rest)
       .map((key) => ` [${key}=${rest[key]}]`)

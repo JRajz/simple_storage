@@ -10,18 +10,10 @@ module.exports = (queryInterface, DataTypes) => {
       fileId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-          model: 'files', // This references the same table
-          key: 'fileId', // The column in the referenced table
-        },
       },
       directoryId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-        references: {
-          model: 'directories', // This references the same table
-          key: 'directoryId', // The column in the referenced table
-        },
       },
       name: {
         type: DataTypes.STRING,
@@ -32,16 +24,12 @@ module.exports = (queryInterface, DataTypes) => {
         allowNull: false,
       },
       accessType: {
-        type: DataTypes.ENUM('Public', 'Private', 'Partial'),
+        type: DataTypes.ENUM('public', 'private', 'partial'),
         allowNull: false,
       },
       creatorId: {
         type: DataTypes.INTEGER, // Assuming creatorId is an integer
         allowNull: false,
-        references: {
-          model: 'users', // References the users table
-          key: 'userId', // The column in the referenced table
-        },
       },
     },
     {
@@ -57,17 +45,17 @@ module.exports = (queryInterface, DataTypes) => {
           instance.updatedAt = new Date();
         },
       },
-      // indexes: [
-      //   {
-      //     fields: ['creatorId'],
-      //     name: 'idx_creator',
-      //   },
-      //   {
-      //     unique: true,
-      //     fields: ['fileId', 'directoryId'],
-      //     name: 'idx_unique',
-      //   },
-      // ],
+      indexes: [
+        {
+          fields: ['creatorId'],
+          name: 'idx_creator',
+        },
+        {
+          unique: true,
+          fields: ['fileId', 'directoryId'],
+          name: 'idx_unique',
+        },
+      ],
     },
   );
 
@@ -78,6 +66,8 @@ module.exports = (queryInterface, DataTypes) => {
     FileMap.belongsTo(models.directory, { foreignKey: 'directoryId' });
 
     FileMap.belongsTo(models.user, { foreignKey: 'creatorId' });
+
+    FileMap.hasMany(models.fileAccess, { foreignKey: 'fileMapId' });
   };
   return FileMap;
 };

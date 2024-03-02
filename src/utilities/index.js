@@ -6,4 +6,5 @@ module.exports = {
   Message: require('./Message'),
   Validate: require('./Validate'),
   fileHashGenerator: require('./fileHashGenerator'),
+  redisClient: require('./redis'),
 };

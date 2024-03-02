@@ -1,9 +1,47 @@
 const fs = require('fs').promises;
+const Sequelize = require('sequelize');
+
 const { models, sequelize } = require('../loaders/sequelize');
 const { Logger, Response, Message } = require('../utilities');
 const FileService = require('./FileService');
 
 class FileVersionService {
+  /**
+   * Checks if a specific file version exists.
+   * @param {Object} params - Parameters containing fileId and versionId.
+   * @returns {Promise} - Resolves with the found version or throws an error if not found.
+   */
+  static async checkFileVersion({ id, versionId }) {
+    try {
+      Logger.info('FileVersionService: Verify file version', { id, versionId });
+
+      const version = await models.fileVersion.findOne({
+        where: {
+          versionId,
+          fileMapId: id,
+        },
+      });
+
+      // throw error if file exists in versions
+      if (!version) {
+        throw Response.createError(Message.DUPLICATE_VERSION_FILE);
+      }
+
+      return version;
+    } catch (error) {
+      Logger.error('FileVersionService: Error verify file version hashKey with version files', { id, versionId });
+      throw Response.createError(Message.TR, error);
+    }
+  }
+
+  /**
+   * Checks if a given hash key exists within any file versions associated with a file ID.
+   *
+   * @param {number} id - The ID of the file.
+   * @param {string} hashKey - The hash key to search for.
+   * @returns {Promise<number>} - The number of versions matching the hash key.
+   * @throws {Error} - If an error occurs during the check.
+   */
   static async checkHashKeyExists(id, hashKey) {
     try {
       Logger.info('FileVersionService: Check hashKey with version files', { id, hashKey });
@@ -31,16 +69,24 @@ class FileVersionService {
       return count;
     } catch (error) {
       Logger.error('FileVersionService: Error checking hashKey with version files', { id, hashKey });
-      throw Response.createError(Message.TR, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
-  static async getAll(id) {
+  /**
+   * Retrieves all file versions for a given file ID (fileMapId).
+   *
+   * @param {number} id - The ID of the file map.
+   * @returns {Promise<Array<object>>} - An array of file version data objects.
+   * @throws {Error} - If an error occurs during retrieval.
+   */
+  static async getAll(fileMapId) {
     try {
-      Logger.info('FileVersionService: Fetch all file versions', { id });
+      Logger.info('FileVersionService: Fetch all file versions', { fileMapId });
 
       const versionFiles = await models.fileVersion.findAll({
         attributes: [
+          'versionId',
           'fileId',
           'name',
           'description',
@@ -51,7 +97,7 @@ class FileVersionService {
           'updatedAt',
         ],
         where: {
-          fileMapId: id,
+          fileMapId,
         },
         include: [
           {
@@ -59,16 +105,22 @@ class FileVersionService {
             attributes: [],
           },
         ],
+        order: [[sequelize.col('createdAt'), 'DESC']], // Order by createdAt descending
       });
 
       return versionFiles;
     } catch (error) {
-      Logger.error('FileVersionService: Error fetch all file versions', { id });
+      Logger.error('FileVersionService: Error fetch all file versions', { fileMapId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
-  // Include new file version
+  /**
+   * Inserts a new file version.
+   * @param {Object} fileData - Data of the file being inserted.
+   * @param {Object} fileMapData - Data of the file map.
+   * @returns {Promise} - Resolves with an empty object upon successful insertion or throws an error.
+   */
   static async insert(fileData, fileMapData) {
     // Extract temporary file path from fileData
     const tempFilePath = fileData.filePath;
@@ -83,6 +135,7 @@ class FileVersionService {
 
       // Start a transaction to ensure atomicity
       await sequelize.transaction(async (transaction) => {
+        // If fileId is not provided, insert the file data
         if (!fileId) {
           file = await FileService.insert({
             ...fileParams,
@@ -90,12 +143,14 @@ class FileVersionService {
           });
         }
 
+        // Create file version data
         const fileVersionData = {
           fileMapId: fileMapData.id,
           fileId: fileMapData.fileId,
           name: fileMapData.name,
           description: fileMapData.description,
         };
+        // Insert file version
         await models.fileVersion.create(fileVersionData, { transaction });
 
         const updateData = {
@@ -104,8 +159,7 @@ class FileVersionService {
           description,
         };
 
-        // fileMapData.update
-        // Insert file mapping
+        // Update file map
         await models.fileMap.update(updateData, {
           where: {
             id: fileMapData.id,
@@ -113,24 +167,72 @@ class FileVersionService {
           transaction,
         });
 
+        // If fileId was generated, copy file from temporary location to permanent upload location
         if (!fileId) {
-          // Copy file from temporary location to permanent upload location asynchronously
           await fs.copyFile(tempFilePath, file.filePath);
         }
       });
 
-      await fs.unlink(tempFilePath); // Cleanup after successful insertion
+      // Cleanup temporary file
+      await fs.unlink(tempFilePath);
 
       Logger.info('FileVersionService: File version inserted successfully');
 
-      return { fileId: fileMapData.id };
+      return {};
     } catch (error) {
-      // Remove the file in the temporary directory in case of error
+      // Cleanup temporary file in case of error
       await fs.unlink(tempFilePath);
 
       // Handle errors and throw a formatted response
       Logger.error('FileVersionService: File version insertion failed', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Restores a specific file version.
+   * @param {Object} version - Version data to be restored.
+   * @returns {Promise} - Resolves with an empty object upon successful restoration or throws an error.
+   */
+  static async restore(version) {
+    try {
+      Logger.info('FileVersionService: Restore version', version);
+
+      const { fileMapId, versionId, fileId, name, description } = version;
+
+      // Start a transaction to ensure atomicity
+      await sequelize.transaction(async (transaction) => {
+        // Update file map with version data
+        await models.fileMap.update(
+          {
+            fileId,
+            name,
+            description,
+          },
+          {
+            where: {
+              id: fileMapId,
+            },
+            transaction,
+          },
+        );
+
+        // Remove the restored version and any subsequent versions
+        await models.fileVersion.destroy({
+          where: {
+            versionId: {
+              [Sequelize.Op.gte]: versionId,
+            },
+          },
+          transaction,
+        });
+      });
+      Logger.info('FileVersionService: File restored successfully');
+
+      return {};
+    } catch (error) {
+      Logger.error('FileVersionService: Error restoring file version', error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 }

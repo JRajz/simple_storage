@@ -22,6 +22,13 @@ module.exports = (queryInterface, DataTypes) => {
       updatedAt: 'updatedAt',
       paranoid: false,
       freezeTableName: true, // Disable pluralization of table names
+      indexes: [
+        {
+          unique: true,
+          fields: ['fileMapId', 'userId'],
+          name: 'idx_unique',
+        },
+      ],
     },
   );
 

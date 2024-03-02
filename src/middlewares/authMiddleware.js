@@ -1,6 +1,6 @@
-const { Response, JwtToken, Message } = require('../utilities');
+const { Response, JwtToken, Message, redisClient } = require('../utilities');
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -24,6 +24,12 @@ const authenticateToken = (req, res, next) => {
 
     // Attach decoded user info to request for subsequent use (if applicable)
     req.user = decoded;
+
+    // checking token exists in the redis
+    const redisKey = `user_${decoded.userId}`;
+    if (!(await redisClient.exists(redisKey))) {
+      throw Response.createError(Message.INVALID_TOKEN);
+    }
 
     next(); // Allow protected route access
   } catch (error) {

@@ -29,21 +29,21 @@ module.exports = {
     }),
     query: Joi.object().keys({}),
     params: Joi.object().keys({
-      fileId: Validate.idReq,
+      id: Validate.idReq,
     }),
   }),
   delete: celebrate({
     body: Joi.object().keys({}),
     query: Joi.object().keys({}),
     params: Joi.object().keys({
-      fileId: Validate.idReq,
+      id: Validate.idReq,
     }),
   }),
   paramsFileId: celebrate({
     body: Joi.object().keys({}),
     query: Joi.object().keys({}),
     params: Joi.object().keys({
-      fileId: Validate.idReq,
+      id: Validate.idReq,
     }),
   }),
   uploadVersion: celebrate({
@@ -54,15 +54,37 @@ module.exports = {
     }),
     query: Joi.object().keys({}),
     params: Joi.object().keys({
-      fileId: Validate.idReq,
+      id: Validate.idReq,
     }),
   }),
   versionRestore: celebrate({
     body: Joi.object().keys({}),
     query: Joi.object().keys({}),
     params: Joi.object().keys({
-      fileId: Validate.idReq,
       id: Validate.idReq,
+      versionId: Validate.idReq,
+    }),
+  }),
+  setAccess: celebrate({
+    body: Joi.object().keys({
+      accessType: Joi.string().valid('public', 'private', 'partial').required(),
+      allowedUserIds: Joi.when('accessType', {
+        is: 'partial',
+        then: Validate.idsReq,
+        otherwise: Joi.forbidden(),
+      }),
+    }),
+    query: Joi.object().keys({}),
+    params: Joi.object().keys({
+      id: Validate.idReq,
+    }),
+  }),
+  removeUserAccess: celebrate({
+    body: Joi.object().keys({}),
+    query: Joi.object().keys({}),
+    params: Joi.object().keys({
+      id: Validate.idReq,
+      userId: Validate.idReq,
     }),
   }),
 };

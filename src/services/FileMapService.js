@@ -4,10 +4,15 @@ const { Logger, Response, Message } = require('../utilities');
 const FileService = require('./FileService');
 
 class FileMapService {
-  // get file by id
-  static async getById(fileId, masterFileId = false) {
+  /**
+   * Fetches file details by ID.
+   * @param {number} fileMapId - The ID of the file.
+   * @param {boolean} masterFileId - Whether to include master file ID.
+   * @returns {Promise<Object>} - Resolves with the file details.
+   */
+  static async getById(fileMapId, masterFileId = false) {
     try {
-      Logger.info('FileMapService: Check the entry ', { fileId });
+      Logger.info('FileMapService: Check the entry ', { fileMapId });
 
       let masterAttributes = ['filePath', 'fileSize', 'fileType', 'fileHash'];
       if (masterFileId) {
@@ -22,7 +27,7 @@ class FileMapService {
             attributes: masterAttributes,
           },
         ],
-        where: { id: fileId },
+        where: { id: fileMapId },
       });
 
       // Log if the file is not found
@@ -34,11 +39,16 @@ class FileMapService {
 
       return { ...rest, ...file }; // Return the file record
     } catch (error) {
-      Logger.error('FileMapService: Error Checking file entry', { fileId });
-      throw Response.createError(Message.tryAgain, error);
+      Logger.error('FileMapService: Error Checking file entry', { fileMapId });
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
+  /**
+   * Checks if a file with given attributes already exists.
+   * @param {Object} whereClause - The attributes to check.
+   * @returns {Promise<void>} - Throws an error if file already exists.
+   */
   static async isUnique(whereClause) {
     if (!whereClause.directoryId) {
       // eslint-disable-next-line no-param-reassign
@@ -64,7 +74,11 @@ class FileMapService {
     }
   }
 
-  // Insert a new file record
+  /**
+   * Inserts a new file record.
+   * @param {Object} fileData - Data of the file to insert.
+   * @returns {Promise<Object>} - Resolves with the inserted file's ID.
+   */
   static async insert(fileData) {
     // Extract temporary file path from fileData
     const tempFilePath = fileData.filePath;
@@ -80,6 +94,7 @@ class FileMapService {
 
       // Start a transaction to ensure atomicity
       await sequelize.transaction(async (transaction) => {
+        // If fileId is not provided, insert the file data
         if (!fileId) {
           file = await FileService.insert({
             ...fileParams,
@@ -101,75 +116,68 @@ class FileMapService {
           { transaction },
         );
 
-        // Insert file Access
-        await models.fileAccess.create(
-          {
-            fileMapId: fileMap.id,
-            userId: fileParams.creatorId,
-          },
-          {
-            transaction,
-          },
-        );
-
+        // If fileId was generated, copy file from temporary location to permanent upload location
         if (!fileId) {
-          // Copy file from temporary location to permanent upload location asynchronously
           await fs.copyFile(tempFilePath, file.filePath);
         }
       });
 
-      await fs.unlink(tempFilePath); // Cleanup after successful insertion
+      // Cleanup temporary file
+      await fs.unlink(tempFilePath);
 
       Logger.info('FileMappingService: File inserted successfully');
 
-      return { fileId: fileMap.fileId };
+      return { id: fileMap.id };
     } catch (error) {
-      // Remove the file in the temporary directory in case of error
+      // Cleanup temporary file in case of error
       await fs.unlink(tempFilePath);
 
       // Handle errors and throw a formatted response
       Logger.error('FileMappingService: File insertion failed', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
+  /**
+   * Updates metadata of a file.
+   * @param {Object} payload - Updated metadata.
+   * @returns {Promise<Object>} - Resolves with empty object upon successful update.
+   */
   static async updateMetaData(payload) {
     try {
       Logger.info('FileMapService: Update Meta data', { payload });
 
-      const { fileId, ...params } = payload;
+      const { id, ...params } = payload;
 
       // Update metadata
-      await models.fileMap.update(params, { where: { id: fileId } });
+      await models.fileMap.update(params, { where: { id } });
 
       return {}; // No specific data returned
     } catch (error) {
       Logger.error('FileMapService: Failed to update Meta data', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
-  static async delete({ fileId }) {
+  /**
+   * Deletes a file.
+   * @param {Object} options - Options for file deletion.
+   * @returns {Promise<Object>} - Resolves with an empty object upon successful deletion.
+   */
+  static async delete({ id }) {
     try {
-      Logger.info('FileService: Delete File', { fileId });
+      Logger.info('FileMapService: Delete File', { id });
 
       await sequelize.transaction(async (transaction) => {
-        // Soft delete directory (set deletedAt timestamp)
-        await models.fileMap.destroy({ where: { fileId }, transaction });
-
-        // // Delete associated files (consider checking deleted rows here)
-        // const deletedFilesCount = await models.fileMap.destroy({
-        //   where: { directoryId },
-        //   transaction,
-        // });
+        await models.fileMap.destroy({ where: { id }, transaction });
 
         // Remove access and version
       });
 
       return {};
     } catch (error) {
-      Logger.error('DirectoryService: Failed to delete file', error);
-      throw Response.createError(Message.tryAgain, error);
+      Logger.error('FileMapService: Failed to delete file', error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 }

@@ -18,6 +18,11 @@ const config = {
     COLLATE: 'utf8mb4_unicode_ci',
     LOG_QUERY: !!process.env.LOG_QUERY,
   },
+
+  REDIS: {
+    HOST: process.env.REDIS_HOST,
+    PORT: process.env.REDIS_PORT,
+  },
 };
 
 module.exports = config;

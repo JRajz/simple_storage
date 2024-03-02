@@ -7,7 +7,7 @@ const Messages = {
     message: 'An error occurred. Please try again later.',
   },
   TRY_AGAIN: {
-    code: StatusCodes.INTERNAL_SERVER_ERROR,
+    statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
     message: 'Please try again',
   },
   INVALID_REQUEST: {
@@ -89,6 +89,22 @@ const Messages = {
   DUPLICATE_VERSION_FILE: {
     statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
     message: 'File already exists in versions',
+  },
+  INVALID_VERSION_FILE: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'Invalid version file',
+  },
+  VERSION_RESTORED: {
+    statusCode: StatusCodes.OK,
+    message: 'Version restored successfully',
+  },
+  FILE_ACCESS_UPDATED: {
+    statusCode: StatusCodes.OK,
+    message: 'File Access updated successfully',
+  },
+  FILE_ACCESS_DENIED: {
+    statusCode: StatusCodes.FORBIDDEN,
+    message: 'Access denied for the file',
   },
   // You can add more messages as needed
 };

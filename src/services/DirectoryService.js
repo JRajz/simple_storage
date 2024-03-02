@@ -54,7 +54,7 @@ class DirectoryService {
       return directories;
     } catch (error) {
       Logger.error('DirectoryService: Error getting user directories', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
@@ -73,7 +73,7 @@ class DirectoryService {
       return { directoryId: newDirectory.directoryId };
     } catch (error) {
       Logger.error('DirectoryService: Failed to create directory', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
@@ -98,7 +98,7 @@ class DirectoryService {
       return {}; // No specific data returned
     } catch (error) {
       Logger.error('DirectoryService: Failed to update directory', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 
@@ -132,7 +132,7 @@ class DirectoryService {
       return {};
     } catch (error) {
       Logger.error('DirectoryService: Failed to delete directory', error);
-      throw Response.createError(Message.tryAgain, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
 }

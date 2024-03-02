@@ -5,4 +5,5 @@ module.exports = {
   FileService: require('./FileService'),
   FileMapService: require('./FileMapService'),
   FileVersionService: require('./FileVersionService'),
+  FileAccessService: require('./FileAccessService'),
 };

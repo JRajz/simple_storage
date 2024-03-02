@@ -1,9 +1,8 @@
 const bcrypt = require('bcrypt');
-const { Response, JwtToken, Message } = require('../utilities');
+const { Response, JwtToken, Message, redisClient } = require('../utilities');
 const { UserService } = require('../services');
 
 // Controller function for user signup
-// eslint-disable-next-line consistent-return
 exports.signUp = async (req, res, next) => {
   const { name, email, password } = req.body;
 
@@ -28,7 +27,6 @@ exports.signUp = async (req, res, next) => {
 };
 
 // Controller function for user signin
-// eslint-disable-next-line consistent-return
 exports.signIn = async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -50,7 +48,26 @@ exports.signIn = async (req, res, next) => {
 
     const token = JwtToken.createToken(payload);
 
+    const redisKey = `user_${user.userId}`;
+    const tokenExpirationTime = 60 * 60; // Store for 1 hour
+    await redisClient.set(redisKey, token, {
+      EX: tokenExpirationTime,
+      NX: true,
+    });
+
     Response.success(res, { token }, 'Login Successful');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Logout
+exports.signOut = async (req, res, next) => {
+  try {
+    const redisKey = `user_${req.user.userId}`;
+    await redisClient.del(redisKey);
+
+    Response.success(res, {}, 'Logout Successful');
   } catch (err) {
     next(err);
   }
