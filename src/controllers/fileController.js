@@ -223,7 +223,7 @@ class FileController {
 
       // Insert new version
       const fileRes = await FileVersionService.insert(fileParams, existingFile);
-      Response.success(res, fileRes, Message.FILE_VERSION_UPLOADED);
+      Response.success(res, fileRes, Message.FILE_UPLOADED);
     } catch (err) {
       next(err);
     }
