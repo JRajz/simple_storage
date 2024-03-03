@@ -50,6 +50,12 @@ The Secure Cloud Storage (SCS) system is a robust platform designed to provide u
   - Follow the instructions provided to set up [MySQL](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04) and [Redis](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-20-04) on your server.
   - Once MySQL and Redis are installed and configured, update the .env file with the appropriate database connection details and Redis server information.
 
+  - Seeding the Database (Optional):
+    - The project involves pre-populating the database with initial data (refer `src/seeders` folder), you can execute the following command
+      ```bash
+      npx sequelize-cli db:seed:all
+      ```
+
 5. **Start the API Server:**
   ```bash
   npm start
