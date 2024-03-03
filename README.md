@@ -371,7 +371,6 @@ Use tools like Postman or curl to interact with the API endpoints.
 - [eslint-config-prettier](https://www.npmjs.com/package/eslint-config-prettier): Turns off all rules that are unnecessary or might conflict with Prettier.
 - [eslint-plugin-node](https://www.npmjs.com/package/eslint-plugin-node): Additional ESLint's rules for Node.js.
 - [eslint-plugin-prettier](https://www.npmjs.com/package/eslint-plugin-prettier): Runs Prettier as an ESLint rule.
-- [jest](https://www.npmjs.com/package/jest): JavaScript Testing Framework with a focus on simplicity.
 - [nodemon](https://www.npmjs.com/package/nodemon): Utility that monitors for changes in files and automatically restarts the server.
 - [prettier](https://www.npmjs.com/package/prettier): Opinionated code formatter for JavaScript and TypeScript.
 
