@@ -1,4 +1,4 @@
-# Simple Storage Service
+# Simple Cloud Storage
 
 ## Table of Contents
 
