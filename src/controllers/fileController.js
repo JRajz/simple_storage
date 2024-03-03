@@ -77,11 +77,13 @@ class FileController {
       const file = await FileMapService.getById(id);
 
       // Check user permission to access the file
-      if (file.accessType === 'private' && file.creatorId !== req.user.userId) {
-        throw Response.createError(Message.ACCESS_DENIED);
-      } else if (file.accessType === 'partial') {
-        // Check file permission file access
-        await FileAccessService.checkUserFileAccess({ id, userId: req.user.userId });
+      if (file.creatorId !== req.user.userId) {
+        if (file.accessType === 'private') {
+          throw Response.createError(Message.ACCESS_DENIED);
+        } else if (file.accessType === 'partial') {
+          // Check file permission file access
+          await FileAccessService.checkUserFileAccess({ id, userId: req.user.userId });
+        }
       }
 
       // Check if the file exists
