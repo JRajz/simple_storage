@@ -66,7 +66,7 @@ The Secure Cloud Storage (SCS) system is a robust platform designed to provide u
   - Create a Postman environment with the following variables:
     - `baseUrl`: http://localhost:3000
     - `token`: 
-  - Import the provided [Postman Collection](https://www.postman.com/cryosat-cosmonaut-54527758/workspace/development/collection/22854732-87ade348-3306-4b0c-87fe-2eb64ec41459?action=share&creator=22854732) to quickly set up and test the API endpoints.
+  - Import the provided [Postman Collection](https://www.postman.com/interstellar-shuttle-474580/workspace/public/collection/22854732-4ecba9d5-e5b0-476c-9486-9e9d2e5eb0d2?action=share&creator=22854732) to quickly set up and test the API endpoints.
 
 Use tools like Postman or curl to interact with the API endpoints.
 
