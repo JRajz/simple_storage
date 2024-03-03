@@ -2,25 +2,31 @@ const { celebrate, Joi } = require('celebrate');
 const { Validate } = require('../utilities');
 
 module.exports = {
+  getAll: celebrate({
+    body: Joi.object().keys({}),
+    query: Joi.object().keys({
+      directoryId: Validate.id.default(null),
+    }),
+    params: Joi.object().keys({}),
+  }),
+  search: celebrate({
+    body: Joi.object().keys({}),
+    query: Joi.object().keys({
+      limit: Validate.pageLimit,
+      page: Validate.page,
+      search: Validate.search,
+    }),
+    params: Joi.object().keys({}),
+  }),
   upload: celebrate({
     body: Joi.object().keys({
       name: Validate.stringReq,
       description: Validate.stringReq.min(5),
       file: Validate.fileReq,
+      directoryId: Validate.id.default(null),
     }),
     query: Joi.object().keys({}),
     params: Joi.object().keys({}),
-  }),
-  directoryUpload: celebrate({
-    body: Joi.object().keys({
-      name: Validate.stringReq,
-      description: Validate.stringReq.min(5),
-      file: Validate.fileReq,
-    }),
-    query: Joi.object().keys({}),
-    params: Joi.object().keys({
-      directoryId: Validate.idReq,
-    }),
   }),
   updateMetaData: celebrate({
     body: Joi.object().keys({
@@ -86,5 +92,10 @@ module.exports = {
       id: Validate.idReq,
       userId: Validate.idReq,
     }),
+  }),
+  shared: celebrate({
+    body: Joi.object().keys({}),
+    query: Joi.object().keys({}),
+    params: Joi.object().keys({}),
   }),
 };

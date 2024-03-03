@@ -8,8 +8,8 @@ exports.signUp = async (req, res, next) => {
 
   try {
     // Check if user already exists
-    const isPresent = await UserService.checkUserByEmail(email);
-    if (isPresent) {
+    const user = await UserService.checkUserByEmail(email);
+    if (user) {
       throw Response.createError(Message.USER_ALREADY_EXISTS);
     }
 
@@ -20,7 +20,7 @@ exports.signUp = async (req, res, next) => {
     const userRes = await UserService.createUser({ name, email, password: hashedPassword });
 
     // Return success response
-    Response.success(res, userRes, Message.USER_CREATED_SUCCESSFULLY);
+    Response.success(res, userRes, Message.SIGNUP_SUCCESS);
   } catch (err) {
     next(err);
   }
@@ -32,7 +32,7 @@ exports.signIn = async (req, res, next) => {
 
   try {
     // Check if user exists
-    const user = await UserService.checkUserByEmail(email);
+    const user = await UserService.checkUserByEmail(email, true);
     if (!user) {
       throw Response.createError(Message.INVALID_CREDENTIALS);
     }
@@ -52,7 +52,7 @@ exports.signIn = async (req, res, next) => {
     const tokenExpirationTime = 60 * 60; // Store for 1 hour
     await redisClient.set(redisKey, token, {
       EX: tokenExpirationTime,
-      NX: true,
+      NX: false,
     });
 
     Response.success(res, { token }, 'Login Successful');
@@ -68,6 +68,24 @@ exports.signOut = async (req, res, next) => {
     await redisClient.del(redisKey);
 
     Response.success(res, {}, 'Logout Successful');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getProfile = async (req, res, next) => {
+  try {
+    const userSrv = await UserService.getUserById(req.user.userId);
+    Response.success(res, userSrv, userSrv ? 'Profile Retrieved' : 'No Profile Found');
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserByEmail = async (req, res, next) => {
+  try {
+    const userSrv = await UserService.checkUserByEmail(req.query.email);
+    Response.success(res, userSrv, userSrv ? 'Data found' : 'No data');
   } catch (err) {
     next(err);
   }

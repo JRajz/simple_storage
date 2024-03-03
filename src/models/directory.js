@@ -42,6 +42,7 @@ module.exports = (queryInterface, DataTypes) => {
 
     // One-to-one relationship between a directory and its parent directory
     Directory.hasOne(models.directory, { foreignKey: 'parentDirectoryId', as: 'Parent' });
+
     models.directory.belongsTo(models.directory, { foreignKey: 'parentDirectoryId' });
   };
   return Directory;

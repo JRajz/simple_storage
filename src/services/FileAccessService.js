@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 const Sequelize = require('sequelize');
 
 const { models, sequelize } = require('../loaders/sequelize');
@@ -14,7 +15,7 @@ class FileAccessService {
    */
   static async checkUserFileAccess({ id, userId }) {
     try {
-      Logger.info('FileAccessService: Checking user file access', { id, userId });
+      Logger.info(`${this.constructor.name}: Initiating user file access check`, { id, userId });
 
       const user = await models.fileAccess.findOne({
         where: { fileMapId: id, userId },
@@ -25,7 +26,7 @@ class FileAccessService {
         throw Response.createError(Message.FILE_ACCESS_DENIED);
       }
     } catch (error) {
-      Logger.error('FileAccessService: Error checking user file access', { id, userId });
+      Logger.error(`${this.constructor.name}: Error encountered while checking user file access`, { id, userId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -41,7 +42,7 @@ class FileAccessService {
    */
   static async setAccess({ accessType, allowedUserIds, file }) {
     try {
-      Logger.info('FileAccessService: Setting file access', {
+      Logger.info(`${this.constructor.name}: Setting file access`, {
         fileMapId: file.id,
         accessType,
         allowedUserIds,
@@ -90,7 +91,7 @@ class FileAccessService {
         }
       });
 
-      Logger.info('FileAccessService: File access updated successfully', {
+      Logger.info(`${this.constructor.name}: File access updated successfully`, {
         fileMapId: file.id,
         accessType,
         allowedUserIds,
@@ -98,10 +99,53 @@ class FileAccessService {
 
       return true;
     } catch (error) {
-      Logger.error('FileAccessService: Error setting file access', {
+      Logger.error(`${this.constructor.name}: Error setting file access`, {
         fileMapId: file.id,
         accessType,
       });
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Retrieves users who have access to a file.
+   *
+   * @param {Object} options - An object containing the following properties:
+   *   - id: ID of the file
+   *   - userId: ID of the user
+   * @returns {Promise<{ users: Array<Object>, message: string }>} Resolves with users with access and a message indicating the result.
+   */
+  static async getAccessUsers({ id, userId }) {
+    try {
+      Logger.info(`${this.constructor.name}: Getting file access users`, { id, userId });
+
+      const users = await models.fileAccess.findAll({
+        attributes: [
+          [sequelize.col('user.userId'), 'userId'],
+          [sequelize.col('user.name'), 'name'],
+          [sequelize.col('user.email'), 'email'],
+          'createdAt',
+        ],
+        include: [
+          {
+            model: models.user,
+            attributes: [],
+          },
+          {
+            model: models.fileMap,
+            attributes: [],
+            where: {
+              id,
+              creatorId: userId,
+            },
+          },
+        ],
+      });
+
+      Logger.info(`${this.constructor.name}: Retrieved file access users`, { id, userId });
+      return { users, message: users ? 'Users found' : 'No users found' };
+    } catch (error) {
+      Logger.error(`${this.constructor.name}: Error Get file access users`, { id, userId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -116,16 +160,16 @@ class FileAccessService {
    */
   static async removeUserAccess({ id, userId }) {
     try {
-      Logger.info('FileAccessService: Remove user access from file', { id, userId });
+      Logger.info(`${this.constructor.name}: Initiating removal of user access from file`, { id, userId });
 
       // Remoing user access from table
       await models.fileAccess.destroy({ where: { fileMapId: id, userId } });
 
-      Logger.info('FileAccessService: Removed user access from file successfully', { id, userId });
+      Logger.info(`${this.constructor.name}: Successfully removed user access from file`, { id, userId });
 
       return true;
     } catch (error) {
-      Logger.error('FileAccessService: Error removing user access from file.', { id, userId });
+      Logger.error(`${this.constructor.name}: Error encountered while removing user access from file`, { id, userId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }

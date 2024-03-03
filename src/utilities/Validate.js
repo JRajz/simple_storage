@@ -6,9 +6,9 @@ const text = Joi.string().trim().max(65535);
 const textReq = text.required();
 const number = Joi.number();
 const numberReq = number.required();
-const posNum = number.positive().min(1);
+const posNum = number.positive();
 const posNumReq = posNum.required();
-const integer = number.integer();
+const integer = number.integer().min(1);
 const intReq = integer.required();
 const posInt = posNum.integer();
 const posIntReq = posInt.required();
@@ -18,7 +18,7 @@ const email = string.email().lowercase().label('Email');
 const emailReq = email.required();
 const password = string.alphanum().min(8).max(20).label('Password');
 const passReq = password.required();
-const search = Joi.string().trim().min(3).allow('');
+const search = Joi.string().trim().min(3).required();
 
 const file = Joi.object().keys({
   fieldname: stringReq,
@@ -40,7 +40,7 @@ module.exports = {
   idsReq: posIntsReq,
   password,
   passReq,
-  // pageLimit: posInt.max(MaxPageLimit).default(MaxPageLimit),
+  pageLimit: posInt.max(20).default(20),
   page: posInt.default(1),
   string,
   stringReq,
@@ -52,10 +52,6 @@ module.exports = {
   posNumReq,
   integer,
   intReq,
-  posInt,
-  posIntReq,
-  posIntegers,
-  posIntsReq,
   email,
   emailReq,
   search,

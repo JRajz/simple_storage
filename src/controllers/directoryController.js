@@ -4,8 +4,11 @@ const { Response } = require('../utilities');
 class DirectoryController {
   static async create(req, res, next) {
     try {
-      const params = { ...req.body };
-      params.creatorId = req.user.userId;
+      const params = {
+        creatorId: req.user.userId,
+        name: req.body.name,
+        parentDirectoryId: req.body.directoryId,
+      };
 
       const srvRes = await DirectoryService.create(params);
 
@@ -43,10 +46,13 @@ class DirectoryController {
 
   static async getAll(req, res, next) {
     try {
-      const directories = await DirectoryService.getAll(req.user.userId);
+      const params = {
+        userId: req.user.userId,
+        directoryId: req.query.directoryId,
+      };
+      const directories = await DirectoryService.getAll(params);
 
       const message = directories ? 'Directories retrieved successfully' : 'No directories found';
-
       Response.success(res, directories, message);
     } catch (err) {
       next(err);

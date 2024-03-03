@@ -12,7 +12,7 @@ const { Response, Message, fileHashGenerator, Logger } = require('../utilities')
 
 class FileController {
   // Validate and process file data before insertion
-  static async _validateAndProcessFile(fileData, creatorId, directoryId = null) {
+  static async _validateAndProcessFile(fileData, creatorId, directoryId) {
     try {
       const { file, ...metaData } = fileData;
       const checkParams = { directoryId, creatorId };
@@ -47,28 +47,19 @@ class FileController {
     }
   }
 
-  static async uploadToRoot(req, res, next) {
+  static async upload(req, res, next) {
     try {
       const fileData = req.body;
-      const fileParams = await FileController._validateAndProcessFile(fileData, req.user.userId, null);
-
-      // Insert file into database
-      const fileRes = await FileMapService.insert(fileParams);
-      Response.success(res, fileRes, Message.FILE_UPLOADED);
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  static async uploadToDirectory(req, res, next) {
-    try {
-      const fileData = req.body;
-      const { directoryId } = req.params;
 
       // Check if the directory exists and user has permission to upload
-      await DirectoryService.checkDirectoryExistence({ directoryId, creatorId: req.user.userId });
+      if (fileData.directoryId) {
+        await DirectoryService.checkDirectoryExistence({
+          directoryId: fileData.directoryId,
+          creatorId: req.user.userId,
+        });
+      }
 
-      const fileParams = await FileController._validateAndProcessFile(fileData, req.user.userId, directoryId);
+      const fileParams = await FileController._validateAndProcessFile(fileData, req.user.userId, fileData.directoryId);
 
       // Insert file into database
       const fileRes = await FileMapService.insert(fileParams);
@@ -115,6 +106,39 @@ class FileController {
     }
   }
 
+  static async getAll(req, res, next) {
+    try {
+      const params = {
+        directoryId: req.query.directoryId,
+        creatorId: req.user.userId,
+      };
+
+      const { files, messsage } = await FileMapService.getCreatorFilesByDirectory(params);
+      Response.success(res, files, messsage);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async search(req, res, next) {
+    try {
+      const params = { ...req.query, userId: req.user.userId };
+      const { rows, files, messsage } = await FileMapService.searchFiles(params);
+      Response.success(res, files, messsage, { rows });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async getShared(req, res, next) {
+    try {
+      const { files, messsage } = await FileMapService.getSharedFiles(req.user.userId);
+      Response.success(res, files, messsage);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   static async updateMetaData(req, res, next) {
     try {
       const params = { ...req.body, ...req.params };
@@ -156,7 +180,8 @@ class FileController {
     }
   }
 
-  // File version operations
+  // File version
+
   // Get all versions of a file
   static async getFileVersions(req, res, next) {
     try {
@@ -223,7 +248,8 @@ class FileController {
     }
   }
 
-  // File Access operations
+  // File Access
+  // set file access
   static async setAccess(req, res, next) {
     try {
       const { id } = req.params;
@@ -246,6 +272,19 @@ class FileController {
     }
   }
 
+  // Fetch file access users
+  static async getAccessUsers(req, res, next) {
+    try {
+      const { id } = req.params;
+
+      const { users, message } = await FileAccessService.getAccessUsers({ id, userId: req.user.userId });
+      Response.success(res, users, message);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Fetch user file access
   static async removeUserAccess(req, res, next) {
     try {
       const { id, userId } = req.params;

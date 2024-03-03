@@ -7,12 +7,16 @@ const { combine, timestamp, printf, colorize, simple } = format;
 
 let LoggerInstance = null;
 
-// Initialize logger with the specified log level
+/**
+ * Initialize logger with the specified log level
+ * @param {string} level - The log level to set (default is 'info')
+ */
 const initLogger = (level = 'info') => {
   const PEInstance = new PrettyError();
   PEInstance.skipNodeFiles(); // Skip node internal files
   PEInstance.skipPackage('winston', 'colors'); // Skip certain packages from stack trace
 
+  // Custom log message format
   // eslint-disable-next-line no-shadow
   const customFormat = printf(({ timestamp, level, message, ...rest }) => {
     const metaString = Object.keys(rest)
@@ -53,7 +57,12 @@ const formatError = (error) => {
   return PEInstance.render(error);
 };
 
-// Logging methods
+/**
+ * Logs a message with the specified log level
+ * @param {string} level - The log level
+ * @param {string} message - The log message
+ * @param {object} meta - Additional metadata
+ */
 const log = (level, message, meta) => {
   if (meta instanceof Error) {
     // eslint-disable-next-line no-param-reassign
@@ -67,10 +76,20 @@ const log = (level, message, meta) => {
   LoggerInstance.log(level, message, meta);
 };
 
+/**
+ * Logs an info message
+ * @param {string} message - The info message
+ * @param {object} meta - Additional metadata
+ */
 const info = (message, meta = {}) => {
   log('info', message, meta);
 };
 
+/**
+ * Logs an error message
+ * @param {string} message - The error message
+ * @param {Error} err - The error object
+ */
 const error = (message, err) => {
   log('error', message, err);
 };

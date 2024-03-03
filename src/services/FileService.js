@@ -11,7 +11,7 @@ class FileService {
    */
   static async getByHashKey({ fileHash }) {
     try {
-      Logger.info('FileService: Checking file hash', { fileHash });
+      Logger.info(`${this.constructor.name}: Checking file hash`, { fileHash });
 
       // Query the database to find a file with the given hash key
       const file = await models.file.findOne({
@@ -21,13 +21,13 @@ class FileService {
 
       // Log if the file is not found
       if (!file) {
-        Logger.info('File not found', { fileHash });
+        Logger.info(`${this.constructor.name}: File not found`, { fileHash });
       }
 
       return file; // Return the file record (or null if not found)
     } catch (error) {
       // Handle errors and throw a formatted response
-      Logger.error('FileService: Error Checking file hash', { fileHash });
+      Logger.error(`${this.constructor.name}: Error Checking file hash`, { fileHash });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -39,7 +39,7 @@ class FileService {
    */
   static async insert({ transaction, ...fileParams }) {
     try {
-      Logger.info('FileService: Inserting file', fileParams);
+      Logger.info(`${this.constructor.name}: Inserting file`, fileParams);
 
       // Construct the permanent upload file path
       fileParams.filePath = path.resolve(__dirname, '../../uploads', fileParams.fileName);
@@ -49,7 +49,7 @@ class FileService {
 
       return file;
     } catch (err) {
-      Logger.error('FileService: File insertion failed', err);
+      Logger.error(`${this.constructor.name}: File insertion failed`, err);
       throw Response.createError(Message.TRY_AGAIN, err);
     }
   }

@@ -51,7 +51,7 @@ const Messages = {
     message: 'JWT_SECRET environment variable is not set.',
   },
   USER_ALREADY_EXISTS: {
-    statusCode: StatusCodes.BAD_REQUEST,
+    statusCode: StatusCodes.CONFLICT,
     message: 'User already exists.',
   },
   INVALID_CREDENTIALS: {
@@ -105,6 +105,14 @@ const Messages = {
   FILE_ACCESS_DENIED: {
     statusCode: StatusCodes.FORBIDDEN,
     message: 'Access denied for the file',
+  },
+  DIRECTORY_ALREADY_EXISTS: {
+    statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+    message: 'Duplicate directory name',
+  },
+  SIGNUP_SUCCESS: {
+    statusCode: StatusCodes.CREATED,
+    message: 'Signup successfull',
   },
   // You can add more messages as needed
 };

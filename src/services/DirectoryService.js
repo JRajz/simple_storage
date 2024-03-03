@@ -1,3 +1,5 @@
+const Sequelize = require('sequelize');
+
 const { sequelize, models } = require('../loaders/sequelize');
 const { Logger, Response, Message } = require('../utilities');
 
@@ -13,47 +15,87 @@ class DirectoryService {
    */
   static async checkDirectoryExistence(searchParams) {
     try {
-      Logger.info('DirectoryService: Checking directory existence', { searchParams });
+      Logger.info(`${this.constructor.name}: Directory existence check initiated`, { searchParams });
 
+      // Find the directory based on search parameters
       const directory = await models.directory.findOne({
-        attributes: ['directoryId', 'name'],
+        attributes: ['directoryId', 'name', 'parentDirectoryId'],
         where: {
           ...searchParams,
         },
       });
 
+      // Throw an error if directory not found
       if (!directory) {
         throw Response.createError(Message.INVALID_DIRECTORY);
       }
 
       return directory;
     } catch (error) {
-      Logger.error('DirectoryService: Error checking directory existence', { error });
+      Logger.error(`${this.constructor.name}: Error occurred while checking directory existence`, { searchParams });
       throw error;
     }
   }
 
-  static async getAll(userId) {
+  /**
+   * Checks if a directory name is unique within a parent directory.
+   * @param {Object} payload - Payload containing directory name, parent directory ID, and optionally skip ID.
+   * @returns {Promise<boolean>} - Returns false if name is unique, otherwise throws an error.
+   */
+  static async checkUniqueName({ name, parentDirectoryId, skipId = false }) {
     try {
-      Logger.info('DirectoryService: Getting user directories', { userId });
+      Logger.info(`${this.constructor.name}: Checking Unique name`, { name, parentDirectoryId, skipId });
 
-      const where = {
-        parentDirectoryId: null,
-        creatorId: userId, // Filter by user ID
-      };
+      const where = { name, parentDirectoryId };
+      // Exclude the directory with 'skipId' from the search
+      if (skipId) {
+        where.directoryId = { [Sequelize.Op.ne]: skipId };
+      }
 
-      const directories = await models.directory.findAll({
+      // Find directory with the given name and parent directory
+      const directory = await models.directory.findOne({
         attributes: ['directoryId', 'name'],
         where,
       });
 
+      // Throw an error if directory with the same name already exists
+      if (directory) {
+        throw Response.createError(Message.DIRECTORY_ALREADY_EXISTS);
+      }
+
+      return false;
+    } catch (error) {
+      Logger.error(`${this.constructor.name}: Error Checking Unique name`, { name, parentDirectoryId, skipId });
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Retrieves all directories belonging to a user within a specific parent directory.
+   * @param {Object} options - Options containing directory ID and user ID.
+   * @returns {Promise<Array>} - Array of directories found.
+   */
+  static async getAll({ directoryId, userId }) {
+    try {
+      Logger.info(`${this.constructor.name}: Getting user directories`, { directoryId, userId });
+
+      // Find all directories belonging to the user within the specified parent directory
+      const directories = await models.directory.findAll({
+        attributes: ['directoryId', 'name'],
+        where: {
+          parentDirectoryId: directoryId,
+          creatorId: userId,
+        },
+      });
+
+      // Log if directories found
       if (!directories) {
-        Logger.info('DirectoryService: Directories found', { userId });
+        Logger.info(`${this.constructor.name}: Directories found`, { directoryId, userId });
       }
 
       return directories;
     } catch (error) {
-      Logger.error('DirectoryService: Error getting user directories', error);
+      Logger.error(`${this.constructor.name}: Error getting user directories`, error);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -66,13 +108,18 @@ class DirectoryService {
    */
   static async create(payload) {
     try {
-      Logger.info('DirectoryService: Create directory', { payload });
+      Logger.info(`${this.constructor.name}: Directory creation initiated`, payload);
 
+      // Check if the directory name is unique
+      await this.checkUniqueName(payload);
+
+      // Create a new directory
       const newDirectory = await models.directory.create(payload);
 
       return { directoryId: newDirectory.directoryId };
     } catch (error) {
-      Logger.error('DirectoryService: Failed to create directory', error);
+      Logger.error(`${this.constructor.name}: Failed to create directory`, payload);
+
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -85,19 +132,22 @@ class DirectoryService {
    */
   static async update(payload) {
     try {
-      Logger.info('DirectoryService: Update directory', { payload });
+      Logger.info(`${this.constructor.name}: Directory update initiated`, payload);
 
       const { directoryId, creatorId, name } = payload;
 
       // Ensure directory exists and belongs to the user
-      await this.checkDirectoryExistence({ directoryId, creatorId });
+      const { parentDirectoryId } = await this.checkDirectoryExistence({ directoryId, creatorId });
 
-      // Update directory
+      // Check if the new directory name is unique
+      await this.checkUniqueName({ name, parentDirectoryId, skipId: directoryId });
+
+      // Update directory name
       await models.directory.update({ name }, { where: { directoryId } });
 
       return {}; // No specific data returned
     } catch (error) {
-      Logger.error('DirectoryService: Failed to update directory', error);
+      Logger.error(`${this.constructor.name}: Failed to update directory`, payload);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -110,7 +160,7 @@ class DirectoryService {
    */
   static async delete(payload) {
     try {
-      Logger.info('DirectoryService: Delete directory', { payload });
+      Logger.info(`${this.constructor.name}: Directory deletion initiated`, payload);
 
       const { directoryId } = payload;
 
@@ -126,12 +176,12 @@ class DirectoryService {
           where: { directoryId },
           transaction,
         });
-        Logger.info('DirectoryService: Deleted files', { deletedFilesCount });
+        Logger.info(`${this.constructor.name}: Deleted files`, { deletedFilesCount });
       });
 
       return {};
     } catch (error) {
-      Logger.error('DirectoryService: Failed to delete directory', error);
+      Logger.error(`${this.constructor.name}: Failed to delete directory`, payload);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }

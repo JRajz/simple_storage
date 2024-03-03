@@ -13,7 +13,7 @@ class FileVersionService {
    */
   static async checkFileVersion({ id, versionId }) {
     try {
-      Logger.info('FileVersionService: Verify file version', { id, versionId });
+      Logger.info(`${this.constructor.name}: Verify file version`, { id, versionId });
 
       const version = await models.fileVersion.findOne({
         where: {
@@ -29,7 +29,7 @@ class FileVersionService {
 
       return version;
     } catch (error) {
-      Logger.error('FileVersionService: Error verify file version hashKey with version files', { id, versionId });
+      Logger.error(`${this.constructor.name}: Error verify file version hashKey with version files`, { id, versionId });
       throw Response.createError(Message.TR, error);
     }
   }
@@ -44,7 +44,7 @@ class FileVersionService {
    */
   static async checkHashKeyExists(id, hashKey) {
     try {
-      Logger.info('FileVersionService: Check hashKey with version files', { id, hashKey });
+      Logger.info(`${this.constructor.name}: Check hashKey with version files`, { id, hashKey });
 
       const count = await models.fileVersion.count({
         where: {
@@ -68,7 +68,7 @@ class FileVersionService {
 
       return count;
     } catch (error) {
-      Logger.error('FileVersionService: Error checking hashKey with version files', { id, hashKey });
+      Logger.error(`${this.constructor.name}: Error checking hashKey with version files`, { id, hashKey });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -82,7 +82,7 @@ class FileVersionService {
    */
   static async getAll(fileMapId) {
     try {
-      Logger.info('FileVersionService: Fetch all file versions', { fileMapId });
+      Logger.info(`${this.constructor.name}: Fetch all file versions`, { fileMapId });
 
       const versionFiles = await models.fileVersion.findAll({
         attributes: [
@@ -110,7 +110,7 @@ class FileVersionService {
 
       return versionFiles;
     } catch (error) {
-      Logger.error('FileVersionService: Error fetch all file versions', { fileMapId });
+      Logger.error(`${this.constructor.name}: Error fetch all file versions`, { fileMapId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -126,7 +126,7 @@ class FileVersionService {
     const tempFilePath = fileData.filePath;
 
     try {
-      Logger.info('FileVersionService: Version Insertion', fileData);
+      Logger.info(`${this.constructor.name}: Version Insertion`, fileData);
 
       // Destructure fileData to get relevant information
       const { directoryId, fileId, name, description, ...fileParams } = fileData;
@@ -176,7 +176,7 @@ class FileVersionService {
       // Cleanup temporary file
       await fs.unlink(tempFilePath);
 
-      Logger.info('FileVersionService: File version inserted successfully');
+      Logger.info(`${this.constructor.name}: File version inserted successfully`);
 
       return {};
     } catch (error) {
@@ -184,7 +184,7 @@ class FileVersionService {
       await fs.unlink(tempFilePath);
 
       // Handle errors and throw a formatted response
-      Logger.error('FileVersionService: File version insertion failed', error);
+      Logger.error(`${this.constructor.name}: File version insertion failed`, error);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -196,7 +196,7 @@ class FileVersionService {
    */
   static async restore(version) {
     try {
-      Logger.info('FileVersionService: Restore version', version);
+      Logger.info(`${this.constructor.name}: Restore version`, version);
 
       const { fileMapId, versionId, fileId, name, description } = version;
 
@@ -227,11 +227,11 @@ class FileVersionService {
           transaction,
         });
       });
-      Logger.info('FileVersionService: File restored successfully');
+      Logger.info(`${this.constructor.name}: File restored successfully`);
 
       return {};
     } catch (error) {
-      Logger.error('FileVersionService: Error restoring file version', error);
+      Logger.error(`${this.constructor.name}: Error restoring file version`, error);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }

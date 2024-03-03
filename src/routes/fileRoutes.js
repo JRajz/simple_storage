@@ -3,24 +3,25 @@ const { FileController } = require('../controllers');
 const { Multer } = require('../middlewares');
 const FileValidator = require('../validators/fileValidator');
 
-// Route for uploading a file to the root directory
-router.post('/upload', Multer.single('file'), FileValidator.upload, FileController.uploadToRoot);
+// Route to get all files
+router.get('/', FileValidator.getAll, FileController.getAll);
 
-// Route for uploading a file to a specific directory
-router.post(
-  '/upload/:directoryId',
-  Multer.single('file'),
-  FileValidator.directoryUpload,
-  FileController.uploadToDirectory,
-);
+// Route to search files
+router.get('/search', FileValidator.search, FileController.search);
 
-// Update file meta data
+// Route to get files shared with user
+router.get('/shared', FileValidator.shared, FileController.getShared);
+
+// Route for uploading a file
+router.post('/upload', Multer.single('file'), FileValidator.upload, FileController.upload);
+
+// Route to update file metadata
 router.put('/:id', FileValidator.updateMetaData, FileController.updateMetaData);
 
-// Delete file
+// Route to delete a file
 router.delete('/:id', FileValidator.delete, FileController.delete);
 
-// Download file
+// Route to download a file
 router.get('/:id/download', FileValidator.paramsFileId, FileController.downloadFile);
 
 // File Versioning
@@ -34,9 +35,15 @@ router.post('/upload/versions/:id', Multer.single('file'), FileValidator.uploadV
 // Route to revert to a specific version of a file
 router.post('/:id/revert/:versionId', FileValidator.versionRestore, FileController.restoreVersion);
 
-// Route to set file access
+// File Access
+
+/// Route to set file access
 router.post('/:id/access', FileValidator.setAccess, FileController.setAccess);
 
+// Route to get access users for a file
+router.get('/:id/access/users', FileValidator.paramsFileId, FileController.getAccessUsers);
+
+// Route to remove access for a user from a file
 router.delete('/:id/access/:userId', FileValidator.removeUserAccess, FileController.removeUserAccess);
 
 module.exports = router;

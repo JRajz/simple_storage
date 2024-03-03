@@ -22,14 +22,15 @@ const authenticateToken = async (req, res, next) => {
 
     const decoded = JwtToken.verifyToken(token);
 
-    // Attach decoded user info to request for subsequent use (if applicable)
-    req.user = decoded;
-
     // checking token exists in the redis
     const redisKey = `user_${decoded.userId}`;
-    if (!(await redisClient.exists(redisKey))) {
+    const userToken = await redisClient.get(redisKey);
+    if (!userToken || userToken !== token) {
       throw Response.createError(Message.INVALID_TOKEN);
     }
+
+    // Attach decoded user info to request
+    req.user = decoded;
 
     next(); // Allow protected route access
   } catch (error) {

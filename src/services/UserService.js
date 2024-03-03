@@ -14,17 +14,19 @@ class UserService {
     try {
       Logger.info('UserService: Getting user by ID', { userId });
 
-      const user = await models.User.findByPk(userId);
+      const user = await models.user.findByPk(userId, {
+        attributes: ['userId', 'name', 'email'],
+      });
 
       if (user) {
         return user;
       }
 
-      Logger.debug('User not found', { userId });
+      Logger.error('User not found', { userId });
 
       throw Response.createError(Message.userNotFound);
     } catch (error) {
-      Logger.error('UserService: Error getting user by ID', error);
+      Logger.error('UserService: Error getting user by ID', { userId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -90,12 +92,19 @@ class UserService {
    * @returns {Promise<Object|null>} - Resolves with the user record if found, null otherwise.
    * @throws {Error} - Throws an error if the operation fails.
    */
-  static async checkUserByEmail(email) {
+  static async checkUserByEmail(email, isPassword = false) {
     try {
       Logger.info('UserService: Checking uniqueness of email');
 
-      const user = await models.user.findOne({ where: { email } });
+      let attributes = ['userId', 'name', 'email'];
+      if (isPassword) {
+        attributes = ['password', ...attributes];
+      }
 
+      const user = await models.user.findOne({
+        attributes,
+        where: { email },
+      });
       return user;
     } catch (error) {
       Logger.error('UserService: Error checking email uniqueness', error);

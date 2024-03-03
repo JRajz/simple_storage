@@ -1,4 +1,6 @@
 const fs = require('fs').promises;
+const Sequelize = require('sequelize');
+
 const { models, sequelize } = require('../loaders/sequelize');
 const { Logger, Response, Message } = require('../utilities');
 const FileService = require('./FileService');
@@ -12,7 +14,7 @@ class FileMapService {
    */
   static async getById(fileMapId, masterFileId = false) {
     try {
-      Logger.info('FileMapService: Check the entry ', { fileMapId });
+      Logger.info(`${this.constructor.name}: Check the entry `, { fileMapId });
 
       let masterAttributes = ['filePath', 'fileSize', 'fileType', 'fileHash'];
       if (masterFileId) {
@@ -39,7 +41,7 @@ class FileMapService {
 
       return { ...rest, ...file }; // Return the file record
     } catch (error) {
-      Logger.error('FileMapService: Error Checking file entry', { fileMapId });
+      Logger.error(`${this.constructor.name}: Error Checking file entry`, { fileMapId });
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -56,7 +58,7 @@ class FileMapService {
     }
 
     try {
-      Logger.info('FileMappingService: Checking file exists', whereClause);
+      Logger.info(`${this.constructor.name}: Checking file exists`, whereClause);
 
       const fileMap = await models.fileMap.findOne({
         attributes: ['id', 'name'],
@@ -69,7 +71,7 @@ class FileMapService {
         throw Response.createError(Message.DUPLICATE_FILE);
       }
     } catch (error) {
-      Logger.error('FileMappingService: File exists in directory', error);
+      Logger.error(`${this.constructor.name}: File exists in directory`, error);
       throw error;
     }
   }
@@ -84,7 +86,7 @@ class FileMapService {
     const tempFilePath = fileData.filePath;
 
     try {
-      Logger.info('FileMappingService: File Insertion', fileData);
+      Logger.info(`${this.constructor.name}: File Insertion`, fileData);
 
       // Destructure fileData to get relevant information
       const { directoryId, fileId, name, description, ...fileParams } = fileData;
@@ -125,7 +127,7 @@ class FileMapService {
       // Cleanup temporary file
       await fs.unlink(tempFilePath);
 
-      Logger.info('FileMappingService: File inserted successfully');
+      Logger.info(`${this.constructor.name}: File inserted successfully`);
 
       return { id: fileMap.id };
     } catch (error) {
@@ -133,7 +135,7 @@ class FileMapService {
       await fs.unlink(tempFilePath);
 
       // Handle errors and throw a formatted response
-      Logger.error('FileMappingService: File insertion failed', error);
+      Logger.error(`${this.constructor.name}: File insertion failed`, error);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -145,7 +147,7 @@ class FileMapService {
    */
   static async updateMetaData(payload) {
     try {
-      Logger.info('FileMapService: Update Meta data', { payload });
+      Logger.info(`${this.constructor.name}: Update Meta data`, { payload });
 
       const { id, ...params } = payload;
 
@@ -154,7 +156,7 @@ class FileMapService {
 
       return {}; // No specific data returned
     } catch (error) {
-      Logger.error('FileMapService: Failed to update Meta data', error);
+      Logger.error(`${this.constructor.name}: Failed to update Meta data`, error);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }
@@ -166,7 +168,7 @@ class FileMapService {
    */
   static async delete({ id }) {
     try {
-      Logger.info('FileMapService: Delete File', { id });
+      Logger.info(`${this.constructor.name}: Delete File`, { id });
 
       await sequelize.transaction(async (transaction) => {
         await models.fileMap.destroy({ where: { id }, transaction });
@@ -176,7 +178,163 @@ class FileMapService {
 
       return {};
     } catch (error) {
-      Logger.error('FileMapService: Failed to delete file', error);
+      Logger.error(`${this.constructor.name}: Failed to delete file`, error);
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Fetches file details by ID.
+   * @param {number} fileMapId - The ID of the file.
+   * @param {boolean} masterFileId - Whether to include master file ID.
+   * @returns {Promise<Object>} - Resolves with the file details.
+   */
+  static async getCreatorFilesByDirectory(params) {
+    try {
+      Logger.info(`${this.constructor.name}: Fetch creator files by directory`, params);
+
+      const files = await models.fileMap.findAll({
+        attributes: [
+          'id',
+          'directoryId',
+          'creatorId',
+          'name',
+          'description',
+          'accessType',
+          'createdAt',
+          'updatedAt',
+          [sequelize.col('user.name'), 'creator_name'],
+        ],
+        include: [
+          {
+            model: models.file,
+            attributes: [['fileSize', 'size'], ['fileType', 'type'], 'mimeType'],
+          },
+          {
+            model: models.directory,
+            attributes: ['name'],
+          },
+          {
+            model: models.user,
+            attributes: [],
+          },
+        ],
+        where: params,
+      });
+
+      return { files, message: files ? 'Files retrieved successfully' : 'No files found' }; // Return the file record
+    } catch (error) {
+      Logger.error(`${this.constructor.name}: Error Fetching creator files by directory`, params);
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Searches for files matching a search query.
+   * @param {Object} params - Search parameters.
+   * @returns {Promise<Object>} - Resolves with search results.
+   */
+  static async searchFiles(params) {
+    try {
+      Logger.info(`${this.constructor.name}: Searching user files`, params);
+
+      const { page, limit, search, userId } = params;
+
+      const options = {
+        attributes: [
+          'id',
+          'name',
+          'description',
+          'createdAt',
+          'updatedAt',
+          'creatorId',
+          [sequelize.col('user.name'), 'creator_name'],
+        ],
+        include: [
+          {
+            model: models.file,
+            attributes: [['fileSize', 'size'], ['fileType', 'type'], 'mimeType'],
+          },
+          {
+            model: models.user,
+            attributes: [],
+          },
+        ],
+        where: {
+          [Sequelize.Op.and]: [
+            { creatorId: userId }, // Filter by user ID
+            {
+              // Search by name and description (case-insensitive)
+              [Sequelize.Op.or]: [
+                {
+                  name: {
+                    [Sequelize.Op.like]: `%${search.toLowerCase()}%`,
+                  },
+                },
+                {
+                  description: {
+                    [Sequelize.Op.like]: `%${search.toLowerCase()}%`,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        offset: (page - 1) * limit, // Apply pagination offset
+        limit, // Set limit
+      };
+
+      const [rows, files] = await Promise.all([
+        models.fileMap.count({ where: options.where }), // Count total matching rows
+        models.fileMap.findAll(options), // Retrieve files with pagination
+      ]);
+
+      return { rows, files, message: files ? 'Files retrieved successfully' : 'No files found' };
+    } catch (error) {
+      Logger.error(`${this.constructor.name}: Error searching user files`, params);
+      throw Response.createError(Message.TRY_AGAIN, error);
+    }
+  }
+
+  /**
+   * Retrieves files shared with a user.
+   * @param {number} userId - The ID of the user.
+   * @returns {Promise<Object>} - Resolves with shared files.
+   */
+  static async getSharedFiles(userId) {
+    try {
+      Logger.info(`${this.constructor.name}: Retrieving shared files for user`, userId);
+
+      const files = await models.fileMap.findAll({
+        attributes: [
+          'id',
+          'name',
+          'description',
+          'createdAt',
+          'updatedAt',
+          'creatorId',
+          [sequelize.col('user.name'), 'creator_name'],
+        ],
+        include: [
+          {
+            model: models.file,
+            attributes: [['fileSize', 'size'], ['fileType', 'type'], 'mimeType'],
+          },
+          {
+            model: models.fileAccess,
+            attributes: [],
+            where: { userId },
+          },
+          {
+            model: models.user,
+            attributes: [],
+          },
+        ],
+      });
+
+      return { files, message: files ? 'Files retrieved successfully' : 'No files found' }; // Return the file record
+    } catch (error) {
+      Logger.error(`${this.constructor.name}: Error retrieving shared files for user`, userId);
       throw Response.createError(Message.TRY_AGAIN, error);
     }
   }

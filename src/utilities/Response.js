@@ -8,6 +8,7 @@ class Response {
    * @param {*} data - Data to be sent in the response.
    * @param {string|Object} message - Message to be included in the response (optional).
    * Can be a string or an object containing `message` and `statusCode` properties.
+   * @param {Object} extra - Additional properties to include in the response object (optional).
    * @returns {Object} - Express response object.
    */
   static success(res, data, message = null, extra = {}) {
