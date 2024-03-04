@@ -115,8 +115,8 @@ class FileController {
         creatorId: req.user.userId,
       };
 
-      const { files, messsage } = await FileMapService.getCreatorFilesByDirectory(params);
-      Response.success(res, files, messsage);
+      const { files, message } = await FileMapService.getCreatorFilesByDirectory(params);
+      Response.success(res, files, message);
     } catch (err) {
       next(err);
     }
@@ -125,8 +125,8 @@ class FileController {
   static async search(req, res, next) {
     try {
       const params = { ...req.query, userId: req.user.userId };
-      const { rows, files, messsage } = await FileMapService.searchFiles(params);
-      Response.success(res, files, messsage, { rows });
+      const { rows, files, message } = await FileMapService.searchFiles(params);
+      Response.success(res, files, message, { rows });
     } catch (err) {
       next(err);
     }
@@ -134,8 +134,8 @@ class FileController {
 
   static async getShared(req, res, next) {
     try {
-      const { files, messsage } = await FileMapService.getSharedFiles(req.user.userId);
-      Response.success(res, files, messsage);
+      const { files, message } = await FileMapService.getSharedFiles(req.user.userId);
+      Response.success(res, files, message);
     } catch (err) {
       next(err);
     }
